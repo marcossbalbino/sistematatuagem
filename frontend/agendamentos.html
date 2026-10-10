@@ -44,6 +44,10 @@
     </div>
     <div class="col-md-12">
       <textarea id="descricaotatuagem" class="form-control" placeholder="Descrição da tatuagem"></textarea>
+      <div class="col-md-4">
+  <label class="form-label">Desenho aprovado (imagem)</label>
+  <input type="file" id="desenho" class="form-control" accept="image/*">
+</div>
     </div>
 
     <!-- Esse bloco começa escondido — só aparece quando estamos editando um agendamento existente -->
@@ -73,6 +77,7 @@
         <th>Valor</th>
         <th>Status</th>
         <th>Ações</th>
+        <th>Desenho</th>
       </tr>
     </thead>
     <tbody id="corpo-tabela">
