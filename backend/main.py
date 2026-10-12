@@ -18,9 +18,9 @@ app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")   # ← 
 
 app.include_router(clientes.router)
 app.include_router(senioridade.router)
-app.include_router(tatuadores.router)
-app.include_router(agendamentos.router)
-app.include_router(estilos.router)   # ← registra a nova rota
+app.include_router(tatuadores.router, prefix="/tatuadores", tags=["Tatuadores"])
+app.include_router(agendamentos.router, prefix="/agendamentos", tags=["Agendamentos"])
+app.include_router(estilos.router, prefix="/estilos", tags=["Estilos"])
 
 
 @app.get("/")
