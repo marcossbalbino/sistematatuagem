@@ -6,50 +6,13 @@ const formTatuador = document.getElementById('form-tatuador')
 const botaoSubmit = document.getElementById('btn-submit-tatuador')
 
 // limpa o formulário e devolve o botão para o modo de cadastro
-formTatuador.addEventListener('submit', async (e) => {
-  e.preventDefault()
-
-  const tatuador = {
-    nometatuador: document.getElementById('nometatuador').value,
-    cpf: document.getElementById('cpf').value,
-    email: document.getElementById('email').value || null,
-    telefone: document.getElementById('telefone').value || null,
-    datacontratacao: new Date().toISOString().split('T')[0],
-    idsenioridade: Number(document.getElementById('idsenioridade').value)
-  }
-
-  const idTatuador = formTatuador.dataset.idTatuador
-  let idParaEstilos = idTatuador   // qual id vamos usar pra salvar os estilos
-
-  if (idTatuador) {
-    await fetch(`${API}/tatuadores/${idTatuador}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(tatuador)
-    })
-  } else {
-    const resposta = await fetch(`${API}/tatuadores`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(tatuador)
-    })
-    const dados = await resposta.json()
-    idParaEstilos = dados.idtatuador   // pega o id que acabou de ser criado
-  }
-
-  // ─── Salva os estilos marcados, numa segunda chamada ───
-  const idsMarcados = Array.from(document.querySelectorAll('#lista-estilos input:checked'))
-    .map(checkbox => Number(checkbox.value))
-
-  await fetch(`${API}/tatuadores/${idParaEstilos}/estilos`, {
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ idestilos: idsMarcados })
-  })
-
-  limparFormulario()
-  listarTatuadores()
-})
+function limparFormulario() {
+  formTatuador.reset()
+  delete formTatuador.dataset.idTatuador
+  botaoSubmit.textContent = 'Cadastrar'
+  botaoSubmit.classList.remove('btn-success')
+  botaoSubmit.classList.add('btn-primary')
+}
 
 // ─── Busca as senioridades na API e preenche o <select> ───
 async function carregarSenioridades() {
@@ -65,6 +28,25 @@ async function carregarSenioridades() {
 }
 
 carregarSenioridades()
+
+// ─── Busca os estilos na API e monta os checkboxes ───
+async function carregarEstilos() {
+  const resposta = await fetch(`${API}/estilos`)
+  const estilos = await resposta.json()
+
+  const lista = document.getElementById('lista-estilos')
+  lista.innerHTML = ''
+
+  estilos.forEach(e => {
+    lista.innerHTML += `
+      <div class="form-check">
+        <input class="form-check-input" type="checkbox" value="${e.idestilo}" id="estilo-${e.idestilo}">
+        <label class="form-check-label" for="estilo-${e.idestilo}">${e.descricao}</label>
+      </div>`
+  })
+}
+
+carregarEstilos()
 
 // ─── Carrega a lista de tatuadores ao abrir a página ───
 async function listarTatuadores() {
@@ -110,6 +92,7 @@ formTatuador.addEventListener('submit', async (e) => {
   }
 
   const idTatuador = formTatuador.dataset.idTatuador
+  let idParaEstilos = idTatuador   // qual id vamos usar pra salvar os estilos
 
   if (idTatuador) {
     await fetch(`${API}/tatuadores/${idTatuador}`, {
@@ -118,59 +101,28 @@ formTatuador.addEventListener('submit', async (e) => {
       body: JSON.stringify(tatuador)
     })
   } else {
-    await fetch(`${API}/tatuadores`, {
+    const resposta = await fetch(`${API}/tatuadores`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(tatuador)
     })
+    const dados = await resposta.json()
+    idParaEstilos = dados.idtatuador   // pega o id que acabou de ser criado
   }
+
+  // ─── Salva os estilos marcados, numa segunda chamada ───
+  const idsMarcados = Array.from(document.querySelectorAll('#lista-estilos input:checked'))
+    .map(checkbox => Number(checkbox.value))
+
+  await fetch(`${API}/tatuadores/${idParaEstilos}/estilos`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ idestilos: idsMarcados })
+  })
 
   limparFormulario()
   listarTatuadores()
 })
-
-// ─── Abre os dados do tatuador no formulário para edição ───
-function preencherFormularioEdicao(tatuador) {
-  document.getElementById('nometatuador').value = tatuador.nometatuador
-  document.getElementById('cpf').value = tatuador.cpf
-  document.getElementById('email').value = tatuador.email || ''
-  document.getElementById('telefone').value = tatuador.telefone || ''
-  document.getElementById('idsenioridade').value = tatuador.idsenioridade
-  // o navegador encontra a <option> com esse value e a seleciona sozinho
-
-  formTatuador.dataset.idTatuador = tatuador.idtatuador
-
-  botaoSubmit.textContent = 'Salvar alteração'
-  botaoSubmit.classList.remove('btn-primary')
-  botaoSubmit.classList.add('btn-success')
-}
-
-// ─── Exclui um tatuador ───
-async function deletarTatuador(id) {
-  if (!confirm('Tem certeza que deseja excluir este tatuador?')) return
-
-  await fetch(`${API}/tatuadores/${id}`, { method: 'DELETE' })
-  listarTatuadores()
-}
-
-// ─── Busca os estilos na API e monta os checkboxes ───
-async function carregarEstilos() {
-  const resposta = await fetch(`${API}/estilos`)
-  const estilos = await resposta.json()
-
-  const lista = document.getElementById('lista-estilos')
-  lista.innerHTML = ''
-
-  estilos.forEach(e => {
-    lista.innerHTML += `
-      <div class="form-check">
-        <input class="form-check-input" type="checkbox" value="${e.idestilo}" id="estilo-${e.idestilo}">
-        <label class="form-check-label" for="estilo-${e.idestilo}">${e.descricao}</label>
-      </div>`
-  })
-}
-
-carregarEstilos()
 
 // ─── Abre os dados do tatuador no formulário para edição ───
 async function preencherFormularioEdicao(tatuador) {
@@ -179,6 +131,7 @@ async function preencherFormularioEdicao(tatuador) {
   document.getElementById('email').value = tatuador.email || ''
   document.getElementById('telefone').value = tatuador.telefone || ''
   document.getElementById('idsenioridade').value = tatuador.idsenioridade
+  // o navegador encontra a <option> com esse value e a seleciona sozinho
 
   formTatuador.dataset.idTatuador = tatuador.idtatuador
 
@@ -195,4 +148,12 @@ async function preencherFormularioEdicao(tatuador) {
   botaoSubmit.textContent = 'Salvar alteração'
   botaoSubmit.classList.remove('btn-primary')
   botaoSubmit.classList.add('btn-success')
+}
+
+// ─── Exclui um tatuador ───
+async function deletarTatuador(id) {
+  if (!confirm('Tem certeza que deseja excluir este tatuador?')) return
+
+  await fetch(`${API}/tatuadores/${id}`, { method: 'DELETE' })
+  listarTatuadores()
 }

@@ -54,33 +54,6 @@ async function listarAgendamentos() {
   corpo.innerHTML = ''
 
   agendamentos.forEach(a => {
-    corpo.innerHTML += `
-      <tr>
-        <td>${a.idagendamento}</td>
-        <td>${a.cliente}</td>
-        <td>${a.tatuador}</td>
-        <td>${a.dataagendamento}</td>
-        <td>${a.horaagendamento}</td>
-        <td>${a.valortatuagem ?? '-'}</td>
-        <td>${a.status}</td>
-        <td>
-          <button class="btn btn-sm btn-warning me-2" onclick='preencherFormularioEdicao(${JSON.stringify(a)})'>Editar</button>
-          <button class="btn btn-sm btn-danger" onclick="deletarAgendamento(${a.idagendamento})">Excluir</button>
-        </td>
-      </tr>`
-  })
-}
-
-listarAgendamentos()
-
-async function listarAgendamentos() {
-  const resposta = await fetch(`${API}/agendamentos`)
-  const agendamentos = await resposta.json()
-
-  const corpo = document.getElementById('corpo-tabela')
-  corpo.innerHTML = ''
-
-  agendamentos.forEach(a => {
     // se existir um desenho salvo, monta uma miniatura; senão, mostra "-"
     const imagemHtml = a.desenhoaprovado
       ? `<img src="${API}/uploads/${a.desenhoaprovado}" style="max-width: 60px; max-height: 60px;">`
@@ -104,6 +77,7 @@ async function listarAgendamentos() {
   })
 }
 
+listarAgendamentos()
 
 // ─── Cadastrar e atualizar agendamentos ───
 formAgendamento.addEventListener('submit', async (e) => {
