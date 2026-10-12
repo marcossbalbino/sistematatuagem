@@ -2,7 +2,7 @@ from fastapi import APIRouter      # organiza rotas em grupos
 from pydantic import BaseModel     # valida os dados que chegam na API
 from database import conectar      # nossa função de conexão
 
-router = APIRouter()               # cria o grupo de rotas
+router = APIRouter(prefix="/senioridade", tags=["Senioridade"])              # cria o grupo de rotas
 
 # Modelo de dados — define os campos que a senioridade deve ter
 class Senioridade(BaseModel):
