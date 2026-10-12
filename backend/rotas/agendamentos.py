@@ -27,11 +27,10 @@ def criar_agendamento(agendamento: Agendamento):
         (agendamento.idcliente, agendamento.idtatuador, agendamento.dataagendamento,
          agendamento.horaagendamento, agendamento.descricaotatuagem, agendamento.valortatuagem)
     )
-    # repare que a coluna status nem aparece aqui — o banco aplica sozinho
-    # o DEFAULT 'pendente' que já foi definido lá na Aula 2
+    novo_id = cursor.lastrowid   # o ID que o MySQL gerou sozinho pro novo agendamento (AUTO_INCREMENT)
     conn.commit()
     conn.close()
-    return {"mensagem": "Agendamento cadastrado com sucesso"}
+    return {"mensagem": "Agendamento cadastrado com sucesso", "idagendamento": novo_id}
 
 # GET /agendamentos — lista todos os agendamentos, já com nome do cliente e do tatuador
 @router.get("/agendamentos")
@@ -103,18 +102,20 @@ async def upload_desenho(id: int, arquivo: UploadFile = File(...)):
     conn.close()
     return {"mensagem": "Desenho enviado com sucesso", "arquivo": nome_arquivo}
 
-# POST /agendamentos — cadastra um novo agendamento
-@router.post("/agendamentos")
-def criar_agendamento(agendamento: Agendamento):
+# PUT /agendamentos/{id} — atualiza um agendamento existente
+@router.put("/agendamentos/{id}")
+def atualizar_agendamento(id: int, agendamento: Agendamento):
     conn = conectar()
     cursor = conn.cursor()
     cursor.execute(
-        """INSERT INTO agendamento (idcliente, idtatuador, dataagendamento, horaagendamento, descricaotatuagem, valortatuagem)
-           VALUES (%s, %s, %s, %s, %s, %s)""",
+        """UPDATE agendamento
+           SET idcliente=%s, idtatuador=%s, dataagendamento=%s, horaagendamento=%s,
+               descricaotatuagem=%s, valortatuagem=%s, status=%s
+           WHERE idagendamento=%s""",
         (agendamento.idcliente, agendamento.idtatuador, agendamento.dataagendamento,
-         agendamento.horaagendamento, agendamento.descricaotatuagem, agendamento.valortatuagem)
+         agendamento.horaagendamento, agendamento.descricaotatuagem,
+         agendamento.valortatuagem, agendamento.status, id)
     )
-    novo_id = cursor.lastrowid   # o ID que o MySQL gerou sozinho pro novo agendamento (AUTO_INCREMENT)
     conn.commit()
     conn.close()
-    return {"mensagem": "Agendamento cadastrado com sucesso", "idagendamento": novo_id}
+    return {"mensagem": "Agendamento atualizado com sucesso"}

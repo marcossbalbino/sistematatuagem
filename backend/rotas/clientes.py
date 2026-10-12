@@ -66,3 +66,19 @@ def deletar_cliente(id: int):
         conn.rollback()
         conn.close()
         return {"erro": "Não foi possível excluir este cliente. Verifique se ele possui agendamentos."}
+
+# PUT /clientes/{id} — atualiza um cliente existente
+@router.put("/clientes/{id}")
+def atualizar_cliente(id: int, cliente: Cliente):
+    conn = conectar()
+    cursor = conn.cursor()
+    cursor.execute(
+        """UPDATE cliente
+           SET nome=%s, cpf=%s, telefone=%s, datacadastro=%s, cidade=%s, uf=%s
+           WHERE idcliente=%s""",
+        (cliente.nome, cliente.cpf, cliente.telefone,
+         cliente.datacadastro, cliente.cidade, cliente.uf, id)
+    )
+    conn.commit()
+    conn.close()
+    return {"mensagem": "Cliente atualizado com sucesso"}    
